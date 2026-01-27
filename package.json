@@ -1,0 +1,23 @@
+{
+  "name": "competitive-challenge",
+  "version": "1.0.0",
+  "description": "Coding Challenge - Estructuras de Datos y Algoritmos",
+  "main": "index.js",
+  "scripts": {
+    "test": "node utils/runner.js",
+    "test:time": "node utils/runner.js --time",
+    "submit": "node utils/submit.js",
+    "validate": "node utils/validator.js",
+    "verify": "node utils/verify.js"
+  },
+  "keywords": [
+    "coding-challenge",
+    "algorithms",
+    "data-structures",
+    "competitive-programming"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+}
