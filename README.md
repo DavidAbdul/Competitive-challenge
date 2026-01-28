@@ -55,7 +55,7 @@ git push origin solucion/TU_NOMBRE
 
 ¿Necesitas repasar estructuras de datos y algoritmos? Estos recursos gratuitos te ayudarán:
 
-### 🎓 Roadmap
+### 🗺️ Roadmap
 - **[Neetcode - Roadmap][https://neetcode.io/roadmap]** - Ruta para aprendizaje de Estructuras de datos y Algoritmos
 
 ### 🎓 Cursos y Tutoriales
