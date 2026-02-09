@@ -33,9 +33,40 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results
+          name: test-results-${{ github.actor }}-${{ github.run_number }}
           path: results/*.json
           retention-days: 30
+
+      - name: Display results in workflow
+        if: always()
+        run: |
+          echo "## 🧪 Test Results for @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+          # Find the latest results file
+          LATEST_FILE=$(ls -t results/*.json 2>/dev/null | head -n 1)
+
+          if [ -f "$LATEST_FILE" ]; then
+            # Parse and display results using jq
+            TOTAL=$(jq -r '.summary.totalTests' "$LATEST_FILE")
+            PASSED=$(jq -r '.summary.passedTests' "$LATEST_FILE")
+            FAILED=$(jq -r '.summary.failedTests' "$LATEST_FILE")
+            SUCCESS_RATE=$(echo "scale=2; ($PASSED / $TOTAL) * 100" | bc)
+            
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Total Tests**: $TOTAL" >> $GITHUB_STEP_SUMMARY
+            echo "**Passed**: ✅ $PASSED" >> $GITHUB_STEP_SUMMARY
+            echo "**Failed**: ❌ $FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "**Success Rate**: ${SUCCESS_RATE}%" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Challenge Details" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Challenge | Tests | Passed | Failed | Status |" >> $GITHUB_STEP_SUMMARY
+            echo "|-----------|-------|--------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+            
+            jq -r '.challenges[] | "| \(.challenge) | \(.total) | \(.passed) | \(.failed) | \(if .failed == 0 then "✅" else "❌" end) |"' "$LATEST_FILE" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No results file found" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Comment PR with results
         if: github.event_name == 'pull_request'

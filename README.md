@@ -30,7 +30,7 @@ npm run test:time     # Ver tiempos de ejecución
 Cada carpeta tiene un `README.md` con el problema y un `solution.js` para tu código:
 
 1. **challenge1-two-sum** - Fácil (Arrays)
-2. **challenge2-binary-search** - Medio (Búsqueda)  
+2. **challenge2-binary-search** - Medio (Búsqueda)
 3. **challenge3-linked-list** - Medio (Listas Enlazadas)
 
 ## 📤 Subir tu Solución
@@ -40,7 +40,6 @@ git checkout -b solucion/TU_NOMBRE
 git add .
 git commit -m "Mi solución"
 git push origin solucion/TU_NOMBRE
-# Luego crea un Pull Request en GitHub
 ```
 
 ## 📋 Reglas
@@ -56,31 +55,37 @@ git push origin solucion/TU_NOMBRE
 ¿Necesitas repasar estructuras de datos y algoritmos? Estos recursos gratuitos te ayudarán:
 
 ### 🗺️ Roadmap
+
 - **[Neetcode - Roadmap](https://www.neetcode.io/roadmap)** - Ruta para aprendizaje de Estructuras de datos y Algoritmos
 
 ### 🎓 Cursos y Tutoriales
+
 - **[freeCodeCamp - Algorithms](https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/)** - Curso completo en español/inglés
 - **[Programiz - Data Structures](https://www.programiz.com/dsa)** - Tutoriales con ejemplos visuales
 - **[GeeksforGeeks](https://www.geeksforgeeks.org/data-structures/)** - Explicaciones detalladas y ejemplos
 - **[Coursera - Algorithms Specialization](https://www.coursera.org/specializations/algorithms)** - Universidad de Stanford (auditar gratis)
 
 ### 📺 Videos en Español
+
 - **[MoureDev](https://www.youtube.com/watch?v=XAf2VhcjCTQ)** - Roadmap de algoritmos y estructuras
 - **[Código Facilito - Estructuras de Datos](https://www.youtube.com/playlist?list=PLagErt3C7ZrIFvF8RToUI-S0qOyKD_jfF)** - Serie completa
 - **[Platzi - Algoritmos](https://www.youtube.com/c/Platzi)** - Tutoriales prácticos
 
 ### 🌐 Plataformas de Práctica (Gratis)
+
 - **[LeetCode](https://leetcode.com/)** - Miles de problemas (muchos gratis)
 - **[HackerRank](https://www.hackerrank.com/)** - Práctica por categorías
 - **[Codewars](https://www.codewars.com/)** - Aprende resolviendo katas
 - **[Exercism](https://exercism.org/)** - Mentorías gratuitas
 
 ### 📖 Visualizadores
+
 - **[VisuAlgo](https://visualgo.net/)** - Visualiza algoritmos en acción
 - **[Algorithm Visualizer](https://algorithm-visualizer.org/)** - Animaciones interactivas
 - **[Data Structure Visualizations](https://www.cs.usfca.edu/~galles/visualization/)** - Universidad de SF
 
 ### 📝 Cheat Sheets
+
 - **[Big-O Cheat Sheet](https://www.bigocheatsheet.com/)** - Complejidades de algoritmos
 - **[JavaScript Algorithms](https://github.com/trekhleb/javascript-algorithms)** - Repositorio con 150k+ stars
 

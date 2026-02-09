@@ -1,0 +1,105 @@
+name: Update Leaderboard
+
+on:
+  push:
+    branches:
+      - "**"
+      - "!main"
+
+jobs:
+  update-leaderboard:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Checkout submission branch
+        run: |
+          git fetch origin ${{ github.ref_name }}
+          git checkout ${{ github.ref_name }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm run test:time
+        continue-on-error: true
+
+      - name: Update leaderboard
+        run: |
+          # Create leaderboard directory if it doesn't exist
+          mkdir -p leaderboard
+
+          # Find latest results
+          LATEST_FILE=$(ls -t results/*.json 2>/dev/null | head -n 1)
+
+          if [ -f "$LATEST_FILE" ]; then
+            # Extract data
+            BRANCH="${{ github.ref_name }}"
+            AUTHOR="${{ github.actor }}"
+            TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+            
+            TOTAL=$(jq -r '.summary.totalTests' "$LATEST_FILE")
+            PASSED=$(jq -r '.summary.passedTests' "$LATEST_FILE")
+            FAILED=$(jq -r '.summary.failedTests' "$LATEST_FILE")
+            SUCCESS_RATE=$(echo "scale=2; ($PASSED / $TOTAL) * 100" | bc)
+            
+            # Calculate total execution time
+            TOTAL_TIME=$(jq -r '[.challenges[].details[]?.time // "0ms" | gsub("ms";"") | tonumber] | add' "$LATEST_FILE")
+            
+            # Create or update participant entry
+            cat > "leaderboard/${AUTHOR}.json" <<EOF
+          {
+            "author": "$AUTHOR",
+            "branch": "$BRANCH",
+            "timestamp": "$TIMESTAMP",
+            "totalTests": $TOTAL,
+            "passed": $PASSED,
+            "failed": $FAILED,
+            "successRate": $SUCCESS_RATE,
+            "totalTime": $TOTAL_TIME
+          }
+          EOF
+          fi
+
+      - name: Checkout main again
+        run: git checkout main
+
+      - name: Generate leaderboard README
+        run: |
+          cat > LEADERBOARD.md <<'EOF'
+          # 🏆 Leaderboard
+
+          EOF
+          echo "Last updated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> LEADERBOARD.md
+          echo "" >> LEADERBOARD.md
+          echo "## Rankings" >> LEADERBOARD.md
+          echo "" >> LEADERBOARD.md
+          echo "| Rank | Participant | Success Rate | Tests Passed | Total Time (ms) | Last Updated |" >> LEADERBOARD.md
+          echo "|------|-------------|--------------|--------------|-----------------|--------------|" >> LEADERBOARD.md
+
+          # Sort by success rate (desc), then by total time (asc)
+          if [ -d "leaderboard" ] && [ "$(ls -A leaderboard/*.json 2>/dev/null)" ]; then
+            jq -s 'sort_by(-.successRate, .totalTime) | to_entries | .[] | 
+              "| \(.key + 1) | @\(.value.author) | \(.value.successRate)% | \(.value.passed)/\(.value.totalTests) | \(.value.totalTime) | \(.value.timestamp) |"' \
+              leaderboard/*.json -r >> LEADERBOARD.md
+          else
+            echo "| - | No submissions yet | - | - | - | - |" >> LEADERBOARD.md
+          fi
+
+      - name: Commit and push leaderboard
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add leaderboard/ LEADERBOARD.md
+          git diff --staged --quiet || git commit -m "Update leaderboard for ${{ github.actor }}"
+          git push origin main
