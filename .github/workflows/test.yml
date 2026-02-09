@@ -2,8 +2,9 @@ name: Test Solutions
 
 on:
   push:
-    branches-ignore:
-      - main
+    branches:
+      - "**"
+      - "!main"
 
 jobs:
   test:
