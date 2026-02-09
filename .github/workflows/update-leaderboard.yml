@@ -37,11 +37,8 @@ jobs:
         run: npm run test:time
         continue-on-error: true
 
-      - name: Update leaderboard
+      - name: Extract results and prepare data
         run: |
-          # Create leaderboard directory if it doesn't exist
-          mkdir -p leaderboard
-
           # Find latest results
           LATEST_FILE=$(ls -t results/*.json 2>/dev/null | head -n 1)
 
@@ -75,8 +72,9 @@ jobs:
             
             echo "Total time: ${TOTAL_TIME}ms"
             
-            # Create or update participant entry
-            cat > "leaderboard/${AUTHOR}.json" <<EOF
+            # Save to a temporary location
+            mkdir -p /tmp/leaderboard-data
+            cat > "/tmp/leaderboard-data/${AUTHOR}.json" <<EOF
           {
             "author": "$AUTHOR",
             "branch": "$BRANCH",
@@ -90,8 +88,19 @@ jobs:
           EOF
           fi
 
-      - name: Checkout main again
-        run: git checkout main
+      - name: Checkout main branch
+        run: |
+          git checkout main
+
+      - name: Update leaderboard files
+        run: |
+          # Create leaderboard directory if it doesn't exist
+          mkdir -p leaderboard
+
+          # Copy the data from temp location
+          if [ -f "/tmp/leaderboard-data/${{ github.actor }}.json" ]; then
+            cp "/tmp/leaderboard-data/${{ github.actor }}.json" "leaderboard/${{ github.actor }}.json"
+          fi
 
       - name: Generate leaderboard README
         run: |
