@@ -61,10 +61,10 @@ jobs:
                 elif test("μs$") then 
                   (gsub("μs";"") | tonumber / 1000)
                 elif test("ms$") then 
-                  (gsub("ms";"") | tonumber)ß
+                  (gsub("ms";"") | tonumber)
                 elif test("s$") then 
                   (gsub("s";"") | tonumber * 1000)
-                else ß
+                else 
                   0 
                 end
               ] | add | floor
