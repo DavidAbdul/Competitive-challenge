@@ -43,6 +43,12 @@ jobs:
           LATEST_FILE=$(ls -t results/*.json 2>/dev/null | head -n 1)
 
           if [ -f "$LATEST_FILE" ]; then
+            echo "=== DEBUG: Results file found ==="
+            echo "File: $LATEST_FILE"
+            
+            echo "=== DEBUG: Sample time values ==="
+            jq '.challenges[].details[]?.time' "$LATEST_FILE" | head -10
+            
             # Extract data
             BRANCH="${{ github.ref_name }}"
             AUTHOR="${{ github.actor }}"
@@ -53,24 +59,30 @@ jobs:
             FAILED=$(jq -r '.summary.failedTests' "$LATEST_FILE")
             SUCCESS_RATE=$(echo "scale=2; ($PASSED / $TOTAL) * 100" | bc)
             
+            echo "=== DEBUG: Starting time calculation ==="
+            
             # Calculate total execution time - convert all to ms
             TOTAL_TIME=$(jq -r '
-              [.challenges[].details[]?.time // "0ms" | 
+              [.challenges[].details[]?.time // empty] | 
+              map(
+                . as $time |
                 if test("^[0-9.]+ns$") then 
-                  (gsub("ns$";"") | tonumber / 1000000)
+                  ($time | gsub("ns$";"") | tonumber / 1000000)
                 elif test("^[0-9.]+μs$") then 
-                  (gsub("μs$";"") | tonumber / 1000)
+                  ($time | gsub("μs$";"") | tonumber / 1000)
                 elif test("^[0-9.]+ms$") then 
-                  (gsub("ms$";"") | tonumber)
+                  ($time | gsub("ms$";"") | tonumber)
                 elif test("^[0-9.]+s$") then 
-                  (gsub("s$";"") | tonumber * 1000)
+                  ($time | gsub("s$";"") | tonumber * 1000)
                 else 
                   0 
                 end
-              ] | add | floor
+              ) | 
+              add // 0 | 
+              . * 1000 | floor | . / 1000
             ' "$LATEST_FILE")
             
-            echo "Total time: ${TOTAL_TIME}ms"
+            echo "=== DEBUG: Calculated total time: ${TOTAL_TIME}ms ==="
             
             # Save to a temporary location
             mkdir -p /tmp/leaderboard-data
@@ -86,6 +98,9 @@ jobs:
             "totalTime": $TOTAL_TIME
           }
           EOF
+            
+            echo "=== DEBUG: Leaderboard data file created ==="
+            cat "/tmp/leaderboard-data/${AUTHOR}.json"
           fi
 
       - name: Checkout main branch
@@ -100,6 +115,8 @@ jobs:
           # Copy the data from temp location
           if [ -f "/tmp/leaderboard-data/${{ github.actor }}.json" ]; then
             cp "/tmp/leaderboard-data/${{ github.actor }}.json" "leaderboard/${{ github.actor }}.json"
+            echo "=== Leaderboard file copied to main ==="
+            cat "leaderboard/${{ github.actor }}.json"
           fi
 
       - name: Generate leaderboard README
