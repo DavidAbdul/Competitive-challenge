@@ -43,12 +43,6 @@ jobs:
           LATEST_FILE=$(ls -t results/*.json 2>/dev/null | head -n 1)
 
           if [ -f "$LATEST_FILE" ]; then
-            echo "=== DEBUG: Results file found ==="
-            echo "File: $LATEST_FILE"
-            
-            echo "=== DEBUG: Sample time values ==="
-            jq '.challenges[].details[]?.time' "$LATEST_FILE" | head -10
-            
             # Extract data
             BRANCH="${{ github.ref_name }}"
             AUTHOR="${{ github.actor }}"
@@ -58,8 +52,6 @@ jobs:
             PASSED=$(jq -r '.summary.passedTests' "$LATEST_FILE")
             FAILED=$(jq -r '.summary.failedTests' "$LATEST_FILE")
             SUCCESS_RATE=$(echo "scale=2; ($PASSED / $TOTAL) * 100" | bc)
-            
-            echo "=== DEBUG: Starting time calculation ==="
             
             # Calculate total execution time - convert all to ms
             TOTAL_TIME=$(jq -r '
@@ -82,8 +74,6 @@ jobs:
               . * 1000 | floor | . / 1000
             ' "$LATEST_FILE")
             
-            echo "=== DEBUG: Calculated total time: ${TOTAL_TIME}ms ==="
-            
             # Save to a temporary location
             mkdir -p /tmp/leaderboard-data
             cat > "/tmp/leaderboard-data/${AUTHOR}.json" <<EOF
@@ -98,9 +88,6 @@ jobs:
             "totalTime": $TOTAL_TIME
           }
           EOF
-            
-            echo "=== DEBUG: Leaderboard data file created ==="
-            cat "/tmp/leaderboard-data/${AUTHOR}.json"
           fi
 
       - name: Checkout main branch
@@ -115,8 +102,6 @@ jobs:
           # Copy the data from temp location
           if [ -f "/tmp/leaderboard-data/${{ github.actor }}.json" ]; then
             cp "/tmp/leaderboard-data/${{ github.actor }}.json" "leaderboard/${{ github.actor }}.json"
-            echo "=== Leaderboard file copied to main ==="
-            cat "leaderboard/${{ github.actor }}.json"
           fi
 
       - name: Generate leaderboard README
