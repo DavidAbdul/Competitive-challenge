@@ -59,8 +59,8 @@ jobs:
             # Calculate total execution time - convert all to ms
             TOTAL_TIME=$(jq -r '
               [.challenges[].details[]?.time // "0ms" | 
-                if test("^[0-9.]+n$") then 
-                  (gsub("n$";"") | tonumber / 1000000)
+                if test("^[0-9.]+ns$") then 
+                  (gsub("ns$";"") | tonumber / 1000000)
                 elif test("^[0-9.]+μs$") then 
                   (gsub("μs$";"") | tonumber / 1000)
                 elif test("^[0-9.]+ms$") then 
@@ -72,6 +72,8 @@ jobs:
                 end
               ] | add | floor
             ' "$LATEST_FILE")
+            
+            echo "Total time: ${TOTAL_TIME}ms"
             
             # Create or update participant entry
             cat > "leaderboard/${AUTHOR}.json" <<EOF
