@@ -1,24 +1,9 @@
 # 🏆 Leaderboard
 
-Last updated: Waiting for first submission...
+Last updated: 2026-02-09 19:50:51 UTC
 
 ## Rankings
 
-| Rank | Participant        | Success Rate | Tests Passed | Total Time (ms) | Last Updated |
-| ---- | ------------------ | ------------ | ------------ | --------------- | ------------ |
-| -    | No submissions yet | -            | -            | -               | -            |
-
----
-
-**¿Cómo funciona?**
-
-Este leaderboard se actualiza automáticamente cada vez que alguien hace push a su branch.
-
-1. Haz push a tu branch `solucion/TU_NOMBRE`
-2. Los workflows de GitHub Actions correrán tus tests
-3. Tus resultados aparecerán aquí automáticamente
-
-Los participantes están ordenados por:
-
-1. **Tasa de éxito** (% de tests pasados) - Mayor es mejor
-2. **Tiempo de ejecución** - Menor es mejor
+| Rank | Participant | Success Rate | Tests Passed | Total Time (ms) | Last Updated |
+|------|-------------|--------------|--------------|-----------------|--------------|
+| 1 | @DavidAbdul | 25.00% | 5/20 | 0 | 2026-02-09 19:50:51 UTC |
