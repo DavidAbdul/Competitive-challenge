@@ -1,102 +1,101 @@
 name: Test Solutions
 
 on:
-  pull_request:
-    branches: [ main, master ]
   push:
-    branches: [ main, master ]
+    branches:
+      - "**"
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        
-    - name: Install dependencies
-      run: npm install
-      
-    - name: Validate solutions
-      run: npm run validate
-      continue-on-error: true
-      
-    - name: Run tests with timing
-      run: npm run test:time
-      
-    - name: Upload results
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: test-results
-        path: results/*.json
-        retention-days: 30
-        
-    - name: Comment PR with results
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const fs = require('fs');
-          const path = require('path');
-          
-          // Find the latest results file
-          const resultsDir = './results';
-          const files = fs.readdirSync(resultsDir)
-            .filter(f => f.endsWith('.json'))
-            .map(f => ({
-              name: f,
-              time: fs.statSync(path.join(resultsDir, f)).mtime.getTime()
-            }))
-            .sort((a, b) => b.time - a.time);
-          
-          if (files.length === 0) {
-            console.log('No results file found');
-            return;
-          }
-          
-          const resultsFile = path.join(resultsDir, files[0].name);
-          const results = JSON.parse(fs.readFileSync(resultsFile, 'utf8'));
-          
-          // Create comment body
-          let body = '## 🧪 Test Results\n\n';
-          body += `**Total Tests**: ${results.summary.totalTests}\n`;
-          body += `**Passed**: ✅ ${results.summary.passedTests}\n`;
-          body += `**Failed**: ❌ ${results.summary.failedTests}\n`;
-          body += `**Success Rate**: ${((results.summary.passedTests / results.summary.totalTests) * 100).toFixed(2)}%\n\n`;
-          
-          body += '### Challenge Details\n\n';
-          body += '| Challenge | Tests | Passed | Failed | Status |\n';
-          body += '|-----------|-------|--------|--------|--------|\n';
-          
-          results.challenges.forEach(challenge => {
-            const icon = challenge.failed === 0 ? '✅' : '❌';
-            body += `| ${challenge.challenge} | ${challenge.total} | ${challenge.passed} | ${challenge.failed} | ${icon} |\n`;
-          });
-          
-          // Add timing information if available
-          if (results.challenges[0]?.details?.[0]?.time) {
-            body += '\n### ⏱️ Execution Times\n\n';
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Validate solutions
+        run: npm run validate
+        continue-on-error: true
+
+      - name: Run tests with timing
+        run: npm run test:time
+
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: results/*.json
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Find the latest results file
+            const resultsDir = './results';
+            const files = fs.readdirSync(resultsDir)
+              .filter(f => f.endsWith('.json'))
+              .map(f => ({
+                name: f,
+                time: fs.statSync(path.join(resultsDir, f)).mtime.getTime()
+              }))
+              .sort((a, b) => b.time - a.time);
+
+            if (files.length === 0) {
+              console.log('No results file found');
+              return;
+            }
+
+            const resultsFile = path.join(resultsDir, files[0].name);
+            const results = JSON.parse(fs.readFileSync(resultsFile, 'utf8'));
+
+            // Create comment body
+            let body = '## 🧪 Test Results\n\n';
+            body += `**Total Tests**: ${results.summary.totalTests}\n`;
+            body += `**Passed**: ✅ ${results.summary.passedTests}\n`;
+            body += `**Failed**: ❌ ${results.summary.failedTests}\n`;
+            body += `**Success Rate**: ${((results.summary.passedTests / results.summary.totalTests) * 100).toFixed(2)}%\n\n`;
+
+            body += '### Challenge Details\n\n';
+            body += '| Challenge | Tests | Passed | Failed | Status |\n';
+            body += '|-----------|-------|--------|--------|--------|\n';
+
             results.challenges.forEach(challenge => {
-              if (challenge.details) {
-                body += `**${challenge.challenge}**\n`;
-                challenge.details.forEach(test => {
-                  body += `- ${test.name}: ${test.time}\n`;
-                });
-                body += '\n';
-              }
+              const icon = challenge.failed === 0 ? '✅' : '❌';
+              body += `| ${challenge.challenge} | ${challenge.total} | ${challenge.passed} | ${challenge.failed} | ${icon} |\n`;
             });
-          }
-          
-          // Post comment
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: body
-          });
+
+            // Add timing information if available
+            if (results.challenges[0]?.details?.[0]?.time) {
+              body += '\n### ⏱️ Execution Times\n\n';
+              results.challenges.forEach(challenge => {
+                if (challenge.details) {
+                  body += `**${challenge.challenge}**\n`;
+                  challenge.details.forEach(test => {
+                    body += `- ${test.name}: ${test.time}\n`;
+                  });
+                  body += '\n';
+                }
+              });
+            }
+
+            // Post comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
